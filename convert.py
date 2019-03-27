@@ -1,6 +1,7 @@
 import argparse
 import os
 import numpy as np
+import time
 
 from model import CycleGAN
 from preprocess import *
@@ -13,7 +14,10 @@ def conversion(model_dir, model_name, data_dir, conversion_direction, output_dir
 
     model = CycleGAN(num_features = num_features, mode = 'test')
 
+    start_time = time.time()
     model.load(filepath = os.path.join(model_dir, model_name))
+    end_time = time.time()
+    print('Model loading time: %.2f secs' % (end_time - start_time))
 
     mcep_normalization_params = np.load(os.path.join(model_dir, 'mcep_normalization.npz'))
     mcep_mean_A = mcep_normalization_params['mean_A']
@@ -31,6 +35,8 @@ def conversion(model_dir, model_name, data_dir, conversion_direction, output_dir
         os.makedirs(output_dir)
 
     for file in os.listdir(data_dir):
+
+        start_time = time.time()
 
         filepath = os.path.join(data_dir, file)
         wav, _ = librosa.load(filepath, sr = sampling_rate, mono = True)
@@ -56,6 +62,10 @@ def conversion(model_dir, model_name, data_dir, conversion_direction, output_dir
         coded_sp_converted = np.ascontiguousarray(coded_sp_converted)
         decoded_sp_converted = world_decode_spectral_envelop(coded_sp = coded_sp_converted, fs = sampling_rate)
         wav_transformed = world_speech_synthesis(f0 = f0_converted, decoded_sp = decoded_sp_converted, ap = ap, fs = sampling_rate, frame_period = frame_period)
+
+        end_time = time.time()
+        print('Conversion time: %.2f secs' % (end_time - start_time))
+
         librosa.output.write_wav(os.path.join(output_dir, os.path.basename(file)), wav_transformed, sampling_rate)
 
 

@@ -18,4 +18,4 @@ COPY . /app
 RUN pip3.6 install -r requirements.txt
 
 # Run app.py when the container launches
-CMD ["./download.sh"]
+CMD ["./entryPoint.sh"]
